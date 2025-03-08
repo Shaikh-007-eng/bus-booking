@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Booking System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Bus Booking System</h2>
+
+    <form id="busForm">
+        <input type="text" id="name" placeholder="Enter Name" required>
+        <input type="email" id="email" placeholder="Enter Email" required>
+        <input type="tel" id="phone" placeholder="Enter Phone" required>
+        
+        <select id="bus">
+            <option value="Bus 1">Bus 1</option>
+            <option value="Bus 2">Bus 2</option>
+            <option value="Bus 3">Bus 3</option>
+        </select>
+
+        <button type="submit">Book Ticket</button>
+    </form>
+
+    <h3>Filter by Bus:</h3>
+    <select id="filterBus">
+        <option value="all">All</option>
+        <option value="Bus 1">Bus 1</option>
+        <option value="Bus 2">Bus 2</option>
+        <option value="Bus 3">Bus 3</option>
+    </select>
+
+    <h3>Booking History:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Bus</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="userList"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("busForm");
+            const nameInput = document.getElementById("name");
+            const emailInput = document.getElementById("email");
+            const phoneInput = document.getElementById("phone");
+            const busSelect = document.getElementById("bus");
+            const userList = document.getElementById("userList");
+            const filterSelect = document.getElementById("filterBus");
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+
+            function saveUsers() {
+                localStorage.setItem("users", JSON.stringify(users));
+            }
+
+            function renderUsers() {
+                userList.innerHTML = "";
+                const filteredUsers = users.filter(user => 
+                    filterSelect.value === "all" || user.bus === filterSelect.value
+                );
+                
+                filteredUsers.forEach((user, index) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.phone}</td>
+                        <td>${user.bus}</td>
+                        <td>
+                            <button onclick="editUser(${index})">Edit</button>
+                            <button onclick="deleteUser(${index})">Delete</button>
+                        </td>
+                    `;
+                    userList.appendChild(row);
+                });
+            }
+
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const newUser = {
+                    name: nameInput.value,
+                    email: emailInput.value,
+                    phone: phoneInput.value,
+                    bus: busSelect.value
+                };
+                users.push(newUser);
+                saveUsers();
+                renderUsers();
+                form.reset();
+            });
+
+            window.editUser = function (index) {
+                const user = users[index];
+                nameInput.value = user.name;
+                emailInput.value = user.email;
+                phoneInput.value = user.phone;
+                busSelect.value = user.bus;
+                users.splice(index, 1);
+                saveUsers();
+                renderUsers();
+            };
+
+            window.deleteUser = function (index) {
+                users.splice(index, 1);
+                saveUsers();
+                renderUsers();
+            };
+
+            filterSelect.addEventListener("change", renderUsers);
+
+            renderUsers();
+        });
+    </script>
+
+</body>
+</html>
